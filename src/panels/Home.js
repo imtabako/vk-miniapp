@@ -1,53 +1,51 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+import PropTypes, { elementType } from 'prop-types';
+import { Panel, PanelHeader, Header, Button, Group, Cell, Div, Avatar, Checkbox, FormLayout, FormItem, Input, 
+	SimpleCell, FormLayoutGroup, ChipsInput, Select, Text, AdaptivityProvider, Slider, View} from '@vkontakte/vkui';
 
-import { Panel, PanelHeader, Header, Button, Group, Cell, Div, Avatar, Checkbox, FormLayout, FormItem, Input, FormLayoutGroup, ChipsInput, Select, Text } from '@vkontakte/vkui';
-
-const Home = ({ id, go, fetchedUser }) => (
-	// <Panel id={id}>
-	// 	<PanelHeader>Example</PanelHeader>
-	// 	{fetchedUser &&
-	// 	<Group header={<Header mode="secondary">User Data Fetched with VK Bridge</Header>}>
-	// 		<Cell
-	// 			before={fetchedUser.photo_200 ? <Avatar src={fetchedUser.photo_200}/> : null}
-	// 			subtitle={fetchedUser.city && fetchedUser.city.title ? fetchedUser.city.title : ''}
-	// 		>
-	// 			{`${fetchedUser.first_name} ${fetchedUser.last_name}`}
-	// 		</Cell>
-	// 	</Group>}
-
-	// 	<Group header={<Header mode="secondary">Navigation Example</Header>}>
-	// 		<Div>
-	// 			<Button stretched size="l" mode="secondary" onClick={go} data-to="persik">
-	// 				Show me the Persik, please
-	// 			</Button>
-	// 		</Div>
-	// 	</Group>
-	// </Panel>
-	<Panel id={id}>
-		<PanelHeader>Проверка опроса</PanelHeader>
+const Home = ({Home, go, 
+	age, onChangeAge, ageFilter, onChangeAgeFilter,
+	sex, onChageSex, sexFilter, onChangeSexFilter}) => (
+	<Panel id={Home}>
+		<PanelHeader>Проверка опросов</PanelHeader>
+		<Group>
+			<Header>
+				<Div>
+					<Text weight="1">Важно!</Text>
+					<Text>Вы должны состоять сами в сообществе, голосование которого вы проверяете!</Text>	
+				</Div>
+			</Header>
+		</Group>
 		<Group>
 			<FormLayout>
+				<Header>
 				<FormLayoutGroup mode="horizontal">
 					<FormItem>
 						<Input 
 							id="quiz-input" 
-							type="url" 
+							type="url"
 							placeholder="https://vk.com/wall-142120544_3"
 						/>
 					</FormItem>
 					<FormItem>
-						<Button>Проверить</Button>
+						<Button size='l' onClick={go} data-to="result">Проверить</Button>
 					</FormItem>
 				</FormLayoutGroup>
-				<FormLayoutGroup mode="vertical">
-					<Checkbox>Не засчитывать голоса удаленных пользователей</Checkbox>
-				</FormLayoutGroup>
+				</Header>
+				<Header>
 				<FormLayoutGroup mode="horizontal">
-					<Checkbox>Засчитывать только</Checkbox>
+					<Checkbox>Не засчитывать голоса удаленных пользователей.</Checkbox>
+				</FormLayoutGroup>
+				</Header>
+				<Header>
+				<FormLayoutGroup mode="horizontal">
+					<Checkbox id='sexCheck' onChange={onChangeSexFilter}>Засчитывать только:</Checkbox>
 					<FormItem>
 						<Select
 							placeholder='Женщин'
+							disabled={!sexFilter}
+							value={sex}
+							onChange={onChageSex}
 							options={[
 								{label: 'Женщин', value: 'female'},
 								{label: 'Мужчин', value: 'male'},
@@ -55,20 +53,43 @@ const Home = ({ id, go, fetchedUser }) => (
 						/>
 					</FormItem>
 				</FormLayoutGroup>
+				</Header>
+				<Header>
+				<FormLayoutGroup mode="horizontal" >
+				<Checkbox id='ageCheck' onChange={onChangeAgeFilter}>Засчитывать пользователей возрастом старше:</Checkbox>
+					<FormItem>
+						<Input 
+							id='age'
+							value={age}
+							type='number'
+							disabled={!ageFilter}
+							placeholder="18" after="лет"
+							onChange={onChangeAge}
+						/>
+					</FormItem>
+				</FormLayoutGroup>
+				</Header>
+				<Header>
 				<FormLayoutGroup mode="horizontal">
-					<Checkbox>Засчитывать пользователей старше</Checkbox>
-					<Input 
-						placeholder="18"
-					/>
-					<Text> лет</Text>
+					<Checkbox>Не засчитывать страницы ботов и левые страницы.</Checkbox>
 				</FormLayoutGroup>
-				<FormLayoutGroup mode="vertical">
-					<Checkbox>Не засчитывать страницы ботов и левые страницы</Checkbox>
+				</Header>
+				<Header>
+				<FormLayoutGroup mode="horizontal">
 					<Checkbox>Проверять на вступление в группу:</Checkbox>
-					<ChipsInput></ChipsInput>
-					<Checkbox>Засчитывать только пользователей из города(ов):</Checkbox>
-					<ChipsInput></ChipsInput>
+					<FormItem>
+						<ChipsInput></ChipsInput>
+					</FormItem>
 				</FormLayoutGroup>
+				</Header>
+				<Header>
+				<FormLayoutGroup mode="horizontal">
+					<Checkbox>Засчитывать только пользователей из города(ов):</Checkbox>
+					<FormItem>
+						<ChipsInput></ChipsInput>
+					</FormItem>
+				</FormLayoutGroup>
+				</Header>
 			</FormLayout>
 		</Group>
 	</Panel>
@@ -77,14 +98,19 @@ const Home = ({ id, go, fetchedUser }) => (
 Home.propTypes = {
 	id: PropTypes.string.isRequired,
 	go: PropTypes.func.isRequired,
-	fetchedUser: PropTypes.shape({
-		photo_200: PropTypes.string,
-		first_name: PropTypes.string,
-		last_name: PropTypes.string,
-		city: PropTypes.shape({
-			title: PropTypes.string,
-		}),
-	}),
+	// sex
+	sex: PropTypes.number.isRequired,
+	onChageSex: PropTypes.func.isRequired,
+	sexFilter: PropTypes.bool.isRequired,
+	onChangeSexFilter: PropTypes.func.isRequired,
+	// age
+	age: PropTypes.number.isRequired,
+	onChangeAge: PropTypes.func.isRequired,
+	ageFilter: PropTypes.bool.isRequired,
+	onChangeAgeFilter: PropTypes.func.isRequired,
+	// groups
+	groups: PropTypes.array.isRequired,
+	onChangeGroup: PropTypes.func.isRequired,
 };
 
 export default Home;

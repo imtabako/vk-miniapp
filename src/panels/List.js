@@ -2,8 +2,8 @@ import React from 'react';
 import PropTypes, { elementType } from 'prop-types';
 import { Panel, PanelHeader, Button } from '@vkontakte/vkui';
 
-const Spisok=({Spisok, go})=> (
-	<Panel id={Spisok}>
+const List=({List, go})=> (
+	<Panel id={List}>
 		<PanelHeader>
 			Не засчитанные пользователи
 		</PanelHeader>
@@ -13,9 +13,9 @@ const Spisok=({Spisok, go})=> (
 	</Panel>
 );
 
-Spisok.propTypes = {
+List.propTypes = {
 	id: PropTypes.string.isRequired,
 	go: PropTypes.func.isRequired,
 };
 
-export default Spisok;
+export default List;

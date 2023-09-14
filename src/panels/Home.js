@@ -1,11 +1,13 @@
 import React from 'react';
 import PropTypes, { elementType } from 'prop-types';
 import { Panel, PanelHeader, Header, Button, Group, Cell, Div, Avatar, Checkbox, FormLayout, FormItem, Input, 
-	SimpleCell, FormLayoutGroup, ChipsInput, Select, Text, AdaptivityProvider, Slider, View} from '@vkontakte/vkui';
+	SimpleCell, FormLayoutGroup, ChipsInput, Chip, Select, Text, AdaptivityProvider, Slider, View} from '@vkontakte/vkui';
 
 const Home = ({Home, go, 
 	age, onChangeAge, ageFilter, onChangeAgeFilter,
-	sex, onChageSex, sexFilter, onChangeSexFilter}) => (
+	sex, onChangeSex, sexFilter, onChangeSexFilter,
+	groups, onChangeGroup, onInputChangeGroup
+	}) => (
 	<Panel id={Home}>
 		<PanelHeader>Проверка опросов</PanelHeader>
 		<Group>
@@ -22,7 +24,7 @@ const Home = ({Home, go,
 				<FormLayoutGroup mode="horizontal">
 					<FormItem>
 						<Input 
-							id="quiz-input" 
+							id="pollInput" 
 							type="url"
 							placeholder="https://vk.com/wall-142120544_3"
 						/>
@@ -42,10 +44,10 @@ const Home = ({Home, go,
 					<Checkbox id='sexCheck' onChange={onChangeSexFilter}>Засчитывать только:</Checkbox>
 					<FormItem>
 						<Select
-							placeholder='Женщин'
+							placeholder='Женщин'	// doesn't do anything
 							disabled={!sexFilter}
 							value={sex}
-							onChange={onChageSex}
+							onChange={onChangeSex}
 							options={[
 								{label: 'Женщин', value: 'female'},
 								{label: 'Мужчин', value: 'male'},
@@ -63,7 +65,7 @@ const Home = ({Home, go,
 							value={age}
 							type='number'
 							disabled={!ageFilter}
-							placeholder="18" after="лет"
+							placeholder="18" after="лет"	// placeholder doesn't do anything
 							onChange={onChangeAge}
 						/>
 					</FormItem>
@@ -76,9 +78,24 @@ const Home = ({Home, go,
 				</Header>
 				<Header>
 				<FormLayoutGroup mode="horizontal">
+					{/* Сообщества */}
 					<Checkbox>Проверять на вступление в группу:</Checkbox>
 					<FormItem>
-						<ChipsInput></ChipsInput>
+						<ChipsInput
+							id='inputGroups'
+							value={groups}
+							onChange={onChangeGroup}
+							onInputChange={() => console.log(groups)}
+							renderChip={({ value, label, option: { src }, ...rest }) => (
+								<Chip
+									value={value}
+									before={<Avatar size={20} src={src} role="presentation" />}
+									{...rest}
+								>
+									{label}
+								</Chip>
+							)}
+						/>
 					</FormItem>
 				</FormLayoutGroup>
 				</Header>
@@ -99,8 +116,8 @@ Home.propTypes = {
 	id: PropTypes.string.isRequired,
 	go: PropTypes.func.isRequired,
 	// sex
-	sex: PropTypes.number.isRequired,
-	onChageSex: PropTypes.func.isRequired,
+	sex: PropTypes.string.isRequired,
+	onChangeSex: PropTypes.func.isRequired,
 	sexFilter: PropTypes.bool.isRequired,
 	onChangeSexFilter: PropTypes.func.isRequired,
 	// age
@@ -111,6 +128,7 @@ Home.propTypes = {
 	// groups
 	groups: PropTypes.array.isRequired,
 	onChangeGroup: PropTypes.func.isRequired,
+	onInputChangeGroup: PropTypes.func.isRequired
 };
 
 export default Home;

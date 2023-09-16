@@ -17,7 +17,7 @@ bridge.send("VKWebAppInit");
 // get VK API token
 bridge.send('VKWebAppGetAuthToken', { 
   app_id: 51747238, 
-  scope: 'groups,stats'
+  scope: 'groups,stats,wall'
   })
   .then((data) => { 
     if (data.access_token) {

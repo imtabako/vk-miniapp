@@ -48,6 +48,154 @@ const App = () => {
 		});
 	}
 
+	// Polls
+	const [pollUrl, setPollUrl] = useState('');
+
+	const handlePollUrlChange = e => {
+		if (pollUrl.match(/vk.com\/poll/)) {
+			getPollId(pollUrl);
+		} else if (pollUrl.match(/vk.com\/wall/)) {
+			getPollIdByWall(pollUrl);
+		} else {
+			console.log('WRONG FORMAT');
+		}
+	}
+
+	// Получить poll.id по ссылке формата https://vk.com/poll-206499155_886442433
+	function getPollId(url) {
+		// const regex = /poll(-\d+)_(\d+)/;
+		const match = url.match(/poll(-?\d+)_(\d+)/);
+		if (!match) {
+			console.log('wrong format');
+			return;
+		}
+		const owner_id = match[1];
+		const poll_id = match[2];
+
+		var votes = -1;
+		var answer_ids = [];
+
+		bridge.send('VKWebAppCallAPIMethod', {
+			method: 'polls.getById',
+			params: {
+				owner_id: owner_id,
+				poll_id: poll_id,
+				access_token: access_token,
+				v: 5.131
+			}
+		})
+		.then((data) => {
+			if (data.response) {
+				const response = data.response;
+				console.log('GOT POLL ID');
+				console.log(response);
+
+				// votes, answer_ids
+				votes = response.vores;
+				// answer_ids = response.answer_ids;
+				for (let i = 0; i < response.answers.length; i++) {
+					answer_ids.push(response.answers[i].id);
+				}
+				console.log(answer_ids);
+
+				return bridge.send('VKWebAppCallAPIMethod', {
+					method: 'polls.getVoters',
+					params: {
+						poll_id: poll_id,
+						answer_ids: answer_ids.join(','),
+						access_token: access_token,
+						v: 5.131
+					}
+				});
+			}
+		})
+		.then((data) => {
+			if (data.response) {
+				const response = data.response;
+				console.log('GOT POLL VOTERS');
+				console.log(data.response);
+				console.log(response);
+
+			}
+		})
+		.catch((error) => {
+			console.log('GOT ERR');
+			console.log(error);
+		})
+	}
+
+	// Получить poll.id по ссылке формата https://vk.com/wall-206499155_1548866
+	function getPollIdByWall(url) {
+		// const regex = /poll(-\d+)_(\d+)/;
+		const match = url.match(/wall(-?\d+_\d+)/);
+		if (!match) {
+			console.log('wrong format');
+			return;
+		}
+		const posts = match[1];
+
+		var votes = -1;
+		var answer_ids = [];
+
+		bridge.send('VKWebAppCallAPIMethod', {
+			method: 'wall.getById',
+			params: {
+				posts: posts,
+				access_token: access_token,
+				v: 5.131
+			}
+		})
+		.then((data) => {
+			if (data.response) {
+				const response = data.response[0];
+				console.log('GOT WALL POSTS');
+				console.log(response);
+
+				if (response.attachments[0].type != 'poll') {
+					console.log('NOT A POLL');
+					return;
+				}
+
+				const poll = response.attachments[0].poll;
+				console.log('GOT A POLL');
+				console.log(poll);
+
+				const poll_id = poll.id;
+				// votes, answer_ids
+				const votes = poll.vores;
+				const answer_ids = [];
+				// answer_ids = response.answer_ids;
+				for (let i = 0; i < poll.answers.length; i++) {
+					answer_ids.push(poll.answers[i].id);
+				}
+				console.log(answer_ids);
+
+				return bridge.send('VKWebAppCallAPIMethod', {
+					method: 'polls.getVoters',
+					params: {
+						poll_id: poll_id,
+						answer_ids: answer_ids.join(','),
+						access_token: access_token,
+						v: 5.131
+					}
+				});
+			}
+		})
+		.then((data) => {
+			if (data.response) {
+				const response = data.response;
+				console.log('GOT POLL VOTERS');
+				console.log(data.response);
+				console.log(response);
+
+			}
+		})
+		.catch((error) => {
+			console.log('GOT ERR');
+			console.log(error);
+		})
+	}
+
 	// Sex
 	const [sex, setSex] = useState('female');
 	const [sexFilter, setSexFilter] = useState(false);
@@ -122,6 +270,64 @@ const App = () => {
 		// console.log(e)
 	};
 
+	// Cities
+	  // State для хранения результатов поиска городов
+	  const [citySearchResults, setCitySearchResults] = useState([]);
+
+	  // Функция для выполнения поиска городов с использованием VK API
+	  const searchCities = async (query) => {
+		try {
+		  const response = await bridge.send('VKWebAppCallAPIMethod', {
+			method: 'database.getCities',
+			params: {
+			  country_id: 1, // Идентификатор страны (1 для России)
+			  q: query, // Поисковой запрос
+			  need_all: 1, // Флаг для возвращения полной информации о городах
+			  count: 10, // Количество результатов
+			  v: '5.131', // Версия API
+			},
+		  });
+	
+		  // Обработка результатов поиска
+		  if (response?.data?.response?.items) {
+			setCitySearchResults(response.data.response.items.map((city) => city.title));
+		  }
+		} catch (error) {
+		  console.error('Ошибка при выполнении запроса к VK API:', error);
+		}
+	  };
+	  const [selectedCities, setSelectedCities] = useState([]);
+  const [citySearchQuery, setCitySearchQuery] = useState('');
+
+  // Обработчик изменений в ChipsInput для городов
+  const onCityInputChange = (value) => {
+    setCitySearchQuery(value);
+
+    // Выполняем поиск городов при вводе текста
+    if (value) {
+      // Фильтруем результаты поиска городов на основе введенного текста
+      const filteredCities = citySearchResults.filter((city) =>
+        city.toLowerCase().includes(value.toLowerCase())
+      );
+      setCitySearchResults(filteredCities);
+    } else {
+      setCitySearchResults([]);
+    }
+  };
+
+  // Обработчик выбора города из результатов поиска
+  const onCitySelect = (cityTitle) => {
+    setSelectedCities([...selectedCities, cityTitle]);
+    setCitySearchQuery('');
+    setCitySearchResults([]);
+  };
+
+  // Обработчик удаления города
+  const removeCity = (cityTitle) => {
+  const updatedCities = selectedCities.filter((city) => city !== cityTitle);
+    setSelectedCities(updatedCities);
+  };
+
 	/* Submit form and get (un)counted users from selected poll
 	   Needs:
 	   1) poll
@@ -151,6 +357,10 @@ const App = () => {
 									sex={sex} sexFilter={sexFilter} onChangeSex={onChangeSex} onChangeSexFilter={onChangeSexFilter}	// sex
 									age={age} ageFilter={ageFilter} onChangeAge={onChangeAge} onChangeAgeFilter={onChangeAgeFilter}	// age
 									groups={groups} onChangeGroup={onChangeGroup} onInputChangeGroup={onInputChangeGroup}			// groups
+									citySearchResults={citySearchResults} removeCity={removeCity}  searchCities={searchCities}      // city
+									selectedCities={selectedCities} citySearchQuery={citySearchQuery} onCitySelect={onCitySelect}   // city
+								  	onCityInputChange={onCityInputChange}                                                           // city
+									pollUrl={pollUrl} setPollUrl={setPollUrl} getPollId={getPollId} handlePollUrlChange={handlePollUrlChange}
 								/>
 								<Result id='result' go={go} />
 								<List id='list' go={go} />

@@ -13,8 +13,6 @@ const App = () => {
 	const [popout, setPopout] = useState(<ScreenSpinner size='large' />);
 
 	const access_token = window.access_token;
-	// console.log('<<<THIS>>>');
-	// console.log(access_token);
 
 	useEffect(() => {
 		async function fetchData() {
@@ -48,14 +46,15 @@ const App = () => {
 		});
 	}
 
-	// Polls
+	/* Polls */
 	const [pollUrl, setPollUrl] = useState('');
 
 	const handlePollUrlChange = e => {
+		var pollFound = false;
 		if (pollUrl.match(/vk.com\/poll/)) {
-			getPollId(pollUrl);
+			pollFound = getPollId(pollUrl);
 		} else if (pollUrl.match(/vk.com\/wall/)) {
-			getPollIdByWall(pollUrl);
+			pollFound = getPollIdByWall(pollUrl);
 		} else {
 			console.log('WRONG FORMAT');
 		}
@@ -116,12 +115,17 @@ const App = () => {
 				console.log(data.response);
 				console.log(response);
 
+				return response;
 			}
 		})
 		.catch((error) => {
 			console.log('GOT ERR');
 			console.log(error);
+
+			return null;
 		})
+
+		return null;
 	}
 
 	// Получить poll.id по ссылке формата https://vk.com/wall-206499155_1548866
@@ -188,15 +192,33 @@ const App = () => {
 				console.log(data.response);
 				console.log(response);
 
+				return response;
 			}
 		})
 		.catch((error) => {
 			console.log('GOT ERR');
 			console.log(error);
+
+			return null;
 		})
+
+		return null;
 	}
 
-	// Sex
+	/* Options */
+	const onChangeOption = e => {
+		console.log(e);
+	}
+	/* 1. Deleted */
+	const [deletedFilter, setDeletedFilter] = useState(false);
+
+	const onChangeDeletedFilter = e => {
+		console.log(e);
+		console.log(e.target);
+		setDeletedFilter(e.target.checked);
+	};
+
+	/* 2. Sex */
 	const [sex, setSex] = useState('female');
 	const [sexFilter, setSexFilter] = useState(false);
 
@@ -208,7 +230,7 @@ const App = () => {
 		setSexFilter(e.target.checked);
 	};
 
-	// Age
+	/* 3. Age */
 	const [age, setAge] = useState(18);
 	const [ageFilter, setAgeFilter] = useState(false);
 
@@ -223,8 +245,16 @@ const App = () => {
 		setAgeFilter(e.target.checked);
 	};
 
-	// Group
+	/* 4. Bots and shady users */
+	const [botsFilter, setBotsFilter] = useState(false);
+
+	const onChangeBotsFilter = e => {
+		setBotsFilter(e.target.checked);
+	};
+
+	/* 5. Groups */
 	const [groups, setGroups] = useState([]);
+	const [groupsFilter, setGroupsFilter] = useState(false);
 
 	const onChangeGroup = e => {
 		// `e' is {value, label} Optional[]
@@ -263,6 +293,10 @@ const App = () => {
 		}
 	};
 
+	const onChangeGroupsFilter = e => {
+		setGroupsFilter(e.target.checked);
+	};
+
 	// TODO: При вводе названия, предлагать сообщества в выпадающем списке
 	const onInputChangeGroup = e => {
 		// console.log('>>> ');
@@ -270,63 +304,63 @@ const App = () => {
 		// console.log(e)
 	};
 
-	// Cities
-	  // State для хранения результатов поиска городов
-	  const [citySearchResults, setCitySearchResults] = useState([]);
+	/* 6. Cities */
+	// State для хранения результатов поиска городов
+	const [citySearchResults, setCitySearchResults] = useState([]);
 
-	  // Функция для выполнения поиска городов с использованием VK API
-	  const searchCities = async (query) => {
+	// Функция для выполнения поиска городов с использованием VK API
+	const searchCities = async (query) => {
 		try {
-		  const response = await bridge.send('VKWebAppCallAPIMethod', {
+			const response = await bridge.send('VKWebAppCallAPIMethod', {
 			method: 'database.getCities',
 			params: {
-			  country_id: 1, // Идентификатор страны (1 для России)
-			  q: query, // Поисковой запрос
-			  need_all: 1, // Флаг для возвращения полной информации о городах
-			  count: 10, // Количество результатов
-			  v: '5.131', // Версия API
+				country_id: 1, // Идентификатор страны (1 для России)
+				q: query, // Поисковой запрос
+				need_all: 1, // Флаг для возвращения полной информации о городах
+				count: 10, // Количество результатов
+				v: '5.131', // Версия API
 			},
-		  });
-	
-		  // Обработка результатов поиска
-		  if (response?.data?.response?.items) {
+			});
+
+			// Обработка результатов поиска
+			if (response?.data?.response?.items) {
 			setCitySearchResults(response.data.response.items.map((city) => city.title));
-		  }
+			}
 		} catch (error) {
-		  console.error('Ошибка при выполнении запроса к VK API:', error);
+			console.error('Ошибка при выполнении запроса к VK API:', error);
 		}
-	  };
-	  const [selectedCities, setSelectedCities] = useState([]);
-  const [citySearchQuery, setCitySearchQuery] = useState('');
+	};
+	const [selectedCities, setSelectedCities] = useState([]);
+	const [citySearchQuery, setCitySearchQuery] = useState('');
 
-  // Обработчик изменений в ChipsInput для городов
-  const onCityInputChange = (value) => {
-    setCitySearchQuery(value);
+	// Обработчик изменений в ChipsInput для городов
+	const onCityInputChange = (value) => {
+		setCitySearchQuery(value);
 
-    // Выполняем поиск городов при вводе текста
-    if (value) {
-      // Фильтруем результаты поиска городов на основе введенного текста
-      const filteredCities = citySearchResults.filter((city) =>
-        city.toLowerCase().includes(value.toLowerCase())
-      );
-      setCitySearchResults(filteredCities);
-    } else {
-      setCitySearchResults([]);
-    }
-  };
+		// Выполняем поиск городов при вводе текста
+		if (value) {
+			// Фильтруем результаты поиска городов на основе введенного текста
+			const filteredCities = citySearchResults.filter((city) =>
+			city.toLowerCase().includes(value.toLowerCase())
+			);
+			setCitySearchResults(filteredCities);
+		} else {
+			setCitySearchResults([]);
+		}
+	};
 
-  // Обработчик выбора города из результатов поиска
-  const onCitySelect = (cityTitle) => {
-    setSelectedCities([...selectedCities, cityTitle]);
-    setCitySearchQuery('');
-    setCitySearchResults([]);
-  };
+	// Обработчик выбора города из результатов поиска
+	const onCitySelect = (cityTitle) => {
+		setSelectedCities([...selectedCities, cityTitle]);
+		setCitySearchQuery('');
+		setCitySearchResults([]);
+	};
 
-  // Обработчик удаления города
-  const removeCity = (cityTitle) => {
-  const updatedCities = selectedCities.filter((city) => city !== cityTitle);
-    setSelectedCities(updatedCities);
-  };
+	// Обработчик удаления города
+	const removeCity = (cityTitle) => {
+		const updatedCities = selectedCities.filter((city) => city !== cityTitle);
+		setSelectedCities(updatedCities);
+	};
 
 	/* Submit form and get (un)counted users from selected poll
 	   Needs:
@@ -335,7 +369,6 @@ const App = () => {
 	function getPollUsers() {
 
 	}
-	
 
 	return (
 		<ConfigProvider>
@@ -353,10 +386,13 @@ const App = () => {
 								  формат [option, setOption] = useState();
 								  Передать их панели Home*/}
 								<Home 
-									id='home' fetchedUser={fetchedUser} go={go} 
-									sex={sex} sexFilter={sexFilter} onChangeSex={onChangeSex} onChangeSexFilter={onChangeSexFilter}	// sex
-									age={age} ageFilter={ageFilter} onChangeAge={onChangeAge} onChangeAgeFilter={onChangeAgeFilter}	// age
-									groups={groups} onChangeGroup={onChangeGroup} onInputChangeGroup={onInputChangeGroup}			// groups
+									id='home' fetchedUser={fetchedUser} go={go}
+									onChangeOption={onChangeOption}																	// handle all options changes
+									deletedFilter={deletedFilter} onChangeDeletedFilter={onChangeDeletedFilter}						// 1. deleted
+									sex={sex} sexFilter={sexFilter} onChangeSex={onChangeSex} onChangeSexFilter={onChangeSexFilter}	// 2. sex
+									age={age} ageFilter={ageFilter} onChangeAge={onChangeAge} onChangeAgeFilter={onChangeAgeFilter}	// 3. age
+									botsFilter={botsFilter} onChangeBotsFilter={onChangeBotsFilter}									// 4. bots and shady
+									groups={groups} onChangeGroup={onChangeGroup} onInputChangeGroup={onInputChangeGroup}			// 5. groups
 									citySearchResults={citySearchResults} removeCity={removeCity}  searchCities={searchCities}      // city
 									selectedCities={selectedCities} citySearchQuery={citySearchQuery} onCitySelect={onCitySelect}   // city
 								  	onCityInputChange={onCityInputChange}                                                           // city

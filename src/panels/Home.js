@@ -6,11 +6,14 @@ import {
 } from '@vkontakte/vkui';
 
 const Home = ({ Home, go,
-	deletedFilter, onChangeDeletedFilter,
-	age, onChangeAge, ageFilter, onChangeAgeFilter,
-	sex, onChangeSex, sexFilter, onChangeSexFilter,
-	groups, onChangeGroup, onInputChangeGroup,
-	pollUrl, setPollUrl, handlePollUrlChange
+	setPollUrl, handlePoll,					// Poll
+	onChangeOption, _chstates,
+											// 1. deleted
+	sexFilter, onChangeSex,					// 2. sex
+	age, onChangeAge, ageFilter,			// 3. age
+											// 4. bots and shady
+	groups, groupsFilter, onChangeGroup,	// 5. groups
+	citiesFilter							// 6. cities
 }) => (
 	<Panel id={Home}>
 		<PanelHeader>Проверка опросов</PanelHeader>
@@ -35,12 +38,14 @@ const Home = ({ Home, go,
 						/>
 					</FormItem>
 					<FormItem>
-						<Button size='l' stretched onClick={handlePollUrlChange}>
+						<Button size='l' stretched onClick={handlePoll}>
 							Проверить
 						</Button>
 					</FormItem>
 				</FormLayoutGroup>
 			</FormLayout>
+			{/* Debug button, delete it later */}
+			<Button size='l' stretched onClick={_chstates}>Check</Button>
 		</Group>
 		<Group>
 			<Header>
@@ -53,7 +58,7 @@ const Home = ({ Home, go,
 				<Header>
 					{/* 1. Deleted filter */}
 					<FormLayoutGroup mode="horizontal">
-						<Checkbox id='deletedFilter' onChange={onChangeDeletedFilter}>
+						<Checkbox id='deletedFilter' onChange={onChangeOption}>
 							Не засчитывать голоса удаленных пользователей.
 						</Checkbox>
 					</FormLayoutGroup>
@@ -61,14 +66,14 @@ const Home = ({ Home, go,
 				<Header>
 					{/* 2. Sex filter, sex Select */}
 					<FormLayoutGroup mode="horizontal">
-						<Checkbox id='sexFilter' onChange={onChangeSexFilter}>
+						<Checkbox id='sexFilter' onChange={onChangeOption}>
 							Засчитывать только:
 						</Checkbox>
 						<FormItem>
-							<Select
-								placeholder='Женщин'	// doesn't do anything
+							<Select id='sex'
+								// value={sex}
 								disabled={!sexFilter}
-								value={sex}
+								placeholder='Женщин'	// doesn't do anything
 								onChange={onChangeSex}
 								options={[
 									{ label: 'Женщин', value: 'female' },
@@ -81,15 +86,14 @@ const Home = ({ Home, go,
 				<Header>
 					{/* 3. Age filter, age Input */}
 					<FormLayoutGroup mode="horizontal" >
-						<Checkbox id='ageFilter' onChange={onChangeAgeFilter}>
+						<Checkbox id='ageFilter' onChange={onChangeOption}>
 							Засчитывать пользователей возрастом старше:
 						</Checkbox>
 						<FormItem>
-							<Input
-								id='age'
+							<Input id='age'
 								value={age}
-								type='number'
 								disabled={!ageFilter}
+								type='number'
 								placeholder="18" after="лет"	// placeholder doesn't do anything
 								onChange={onChangeAge}
 							/>
@@ -99,20 +103,24 @@ const Home = ({ Home, go,
 				<Header>
 					{/* 4. Bots and shady filter */}
 					<FormLayoutGroup mode="horizontal">
-						<Checkbox>Не засчитывать страницы ботов и левые страницы.</Checkbox>
+						<Checkbox id='botsFilter' onChange={onChangeOption}>
+							Не засчитывать страницы ботов и левые страницы.
+						</Checkbox>
 					</FormLayoutGroup>
 				</Header>
 				<Header>
 					{/* 5. Groups filter, groups ChipsInput */}
 					<FormLayoutGroup mode="horizontal">
-						<Checkbox >Проверять на вступление в группу:</Checkbox>
+						<Checkbox id='groupsFilter' onChange={onChangeOption}>
+							Проверять на вступление в группу:
+						</Checkbox>
 						<FormItem>
-							<ChipsInput
-								placeholder="Название или ссылка"
-								id='inputGroups'
+							<ChipsInput id='groups'
 								value={groups}
+								disabled={!groupsFilter}
+								placeholder="Название или ссылка"
 								onChange={onChangeGroup}
-								onInputChange={() => console.log(groups)}
+								// onInputChange={() => console.log(groups)}	// suggest group in a dropdown box
 								renderChip={({ value, label, option: { src }, ...rest }) => (
 									<Chip
 										value={value}
@@ -129,9 +137,12 @@ const Home = ({ Home, go,
 				<Header>
 					{/* 6. Cities filter, cities ChipsInput */}
 					<FormLayoutGroup mode="horizontal">
-						<Checkbox>Засчитывать только пользователей из города(ов):</Checkbox>
+						<Checkbox id='citiesFilter' onChange={onChangeOption}>
+							Засчитывать только пользователей из города(ов):
+						</Checkbox>
 						<FormItem>
-							<ChipsInput
+							<ChipsInput id='cities'
+								disabled={!citiesFilter}
 								placeholder="Санкт-Петербург"
 							// onChange={onCityInputChange}
 							/>
@@ -145,20 +156,23 @@ const Home = ({ Home, go,
 
 Home.propTypes = {
 	id: PropTypes.string.isRequired,
-	go: PropTypes.func.isRequired,
+	go: PropTypes.func.isRequired
+};
+	/*
+
+	// options
+	onChangeOption: PropTypes.func.isRequired,
+	_chstates: PropTypes.func.isRequired,
 	// deleted
 	deletedFilter: PropTypes.bool.isRequired,
-	onChangeDeletedFilter: PropTypes.func.isRequired,
 	// sex
 	sex: PropTypes.string.isRequired,
 	onChangeSex: PropTypes.func.isRequired,
 	sexFilter: PropTypes.bool.isRequired,
-	onChangeSexFilter: PropTypes.func.isRequired,
 	// age
 	age: PropTypes.number.isRequired,
 	onChangeAge: PropTypes.func.isRequired,
 	ageFilter: PropTypes.bool.isRequired,
-	onChangeAgeFilter: PropTypes.func.isRequired,
 	// groups
 	groups: PropTypes.array.isRequired,
 	onChangeGroup: PropTypes.func.isRequired,
@@ -168,7 +182,8 @@ Home.propTypes = {
 	// func
 	pollUrl: PropTypes.string.isRequired,
 	setPollUrl: PropTypes.func.isRequired,
-	handlePollUrlChange: PropTypes.func.isRequired
-};
+	handlePoll: PropTypes.func.isRequired
+	
+	*/
 
 export default Home;

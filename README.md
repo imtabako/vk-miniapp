@@ -1,3 +1,23 @@
+# Текущее задание
+## Poll input: 
+При onChange() проверять, может ли пользователь успешно вызвать polls.getVoters. Если нет, пометить Input красным и выдать сообщение об ошибке, [ОПЦИОНАЛЬНО ЕСЛИ ПРОВЕРКА НЕСКОЛЬКИХ ОПРОСОВ не добавлять опрос в список опросов].
+
+## Опции (фильтр):
+### 1. Удаленные
+	users.get(): есть поле user.deactivated (deactivated: "deleted"|"banned")
+### 2. Пол
+	users.get(): user.sex (1-f, 2-m, 0-n/a)
+### 3. Возраст
+	users.get(): current date - user.bdate (25.12.2000)
+### 4. Боты и левые страницы
+	Нет друзей, нет постов, хз
+### 5. Вступление в группы
+	groups.isMember(group_id, user_id):  1-true
+### 6. Принадлежность к городу
+	users.get() user.city.title ИЛИ через жопу как клиент говорил
+
+
+
 [<img width="134" src="https://vk.com/images/apps/mini_apps/vk_mini_apps_logo.svg">](https://vk.com/services)
 
 # Create VK Mini App [![npm][npm]][npm-url] [![deps][deps]][deps-url]

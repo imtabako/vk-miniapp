@@ -76,8 +76,8 @@ const Home = ({ Home, go,
 								placeholder='Женщин'	// doesn't do anything
 								onChange={onChangeSex}
 								options={[
-									{ label: 'Женщин', value: 'female' },
-									{ label: 'Мужчин', value: 'male' },
+									{ label: 'Женщин', value: 1 },
+									{ label: 'Мужчин', value: 2 },
 								]}
 							/>
 						</FormItem>

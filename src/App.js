@@ -6,6 +6,7 @@ import '@vkontakte/vkui/dist/vkui.css';
 import Home from './panels/Home';
 import Result from './panels/Result';
 import List from './panels/List';
+import moment from 'moment';
 
 const App = () => {
 	const [activePanel, setActivePanel] = useState('home');
@@ -27,6 +28,13 @@ const App = () => {
 		setActivePanel(e.currentTarget.dataset.to);
 	};
 
+	// VK API lets you use 3 calls in 1 second. This is helper to avoid the issue
+	function delay(ms) {
+		return new Promise((resolve, reject) => {
+		  setTimeout(resolve, ms);
+		});
+	  }
+
 	// // Helper function
 	// function getUrl(method, params) {
 	// 	params = params || {};
@@ -47,24 +55,197 @@ const App = () => {
 	// }
 
 	/* Polls */
+	// var voters = [];
+	// var votersFiltered = [];
+	var group2user = [];
+	
 	const [pollUrl, setPollUrl] = useState('');
+	// const [pollResult, setPollResult] = useState([]);
 
-	function mainHandlePoll(pollAnswers) {
+	function isApllicableUser(user) {
+		if (deletedFilter) {
+			// TODO: should we check if banned?
+			if (Object.hasOwn(user, 'deactivated'))
+				return 1;
+		}
+
+		if (sexFilter) {
+			if (!Object.hasOwn(user, 'sex'))
+				return -2;
+			if (user.sex != sex)
+				return 2;
+		}
+
+		if (ageFilter) {
+			if (!Object.hasOwn(user, 'bdate'))
+				return -3;
+
+			const now = moment();
+			const udate = moment(user.bdate, 'DD.MM.YYYY');
+			if (!udate.isValid())
+				return -3;
+			if (now.diff(udate, 'years') < age)
+				return 3;
+		}
+
+		if (botsFilter) {
+			// TODO: проверка на ботов и левые страницы
+			;
+		}
+
+		if (groupsFilter) {
+			for (let i = 0; i < groups.length; i++) {
+				let u = group2user[i].find( (g) => g.user_id === user.id);
+				if (u === undefined)
+					return -5;
+				// console.log(u);
+				if (u.member == 0)
+					return 5;
+			}
+		}
+
+		if (citiesFilter) {
+			// TODO: проверка на город
+			;
+		}
+
+		return 0;
+	}
+
+	async function mainHandlePoll(pollAnswers) {
+		var voters = [];
+		var votersFiltered = [];
+
 		console.log(pollAnswers);
 
 		if (pollAnswers == null) {
-			console.log('GOT NO POLL VOTERS');
+			console.log('GOT NO POLL RESULTS');
 			return;
 		}
 
-		console.log('GOT POLL VOTERS');
+		if (pollAnswers.length == 0) {
+			console.log('GOT EMPTY POLL RESULTS');
+			return;
+		}
+
+		console.log('GOT POLL RESULTS');
+		console.log(pollAnswers);
+
+		// Filter each voter, store info (link) of voters
+		/* answer object = {
+			answer_id: ID, 
+			users: {
+				count: COUNT,
+				items: [...]
+			}
+		} */
+		var users = [];
+		var userIds = [];
+		for (let ind = 0; ind < pollAnswers.length; ind++) {
+			const pUsers = pollAnswers[ind].users;
+			userIds = userIds.concat(pUsers.items);
+			console.log(pUsers);
+
+			// TODO: handle when `count' > `users.items.length'
+			const data = await delay(334).then( () => {
+				return bridge.send('VKWebAppCallAPIMethod', {
+					method: 'users.get',
+					params: {
+						user_ids: pUsers.items.join(','),
+						fields: 'screen_name,sex,bdate,country,city',
+						access_token: access_token,
+						v: 5.131
+					}
+				});
+			});
+			const _users = data.response;
+			console.log(_users);
+			users.push(_users);
+		}
+		console.log(users);
+		console.log(userIds);
+
+		// Group handling
+		if (groupsFilter) {
+			for (const group of groups) {
+				var g2u = [];
+				var from = 0;
+				do {
+					var to = from + 500;
+					if (to > userIds.length) {
+						to = userIds.length;
+					}
+					
+					const data = await delay(334).then( () => {
+						return bridge.send('VKWebAppCallAPIMethod', {
+							method: 'groups.isMember',
+							params: {
+								group_id: group.gid,
+								user_ids: userIds.slice(from, to).join(','),		// TODO: problem when more than 500 users
+								access_token: access_token,
+								v: 5.131
+							}
+						})
+						.catch((error) => {
+							console.log('GOT ERR');
+							if (error.error_data.error_code == 203) {
+								console.log('NO ACCESS, CONTINUE');
+							} else {
+								console.log(error);
+							}
+							return null;
+						})
+					});
+					if (data == null) {
+						break;
+					}
+
+					g2u = g2u.concat(data.response);
+
+					from += 500;
+				} while (from < userIds.length);
+				group2user.push(g2u);
+				console.log(group2user);
+			}
+		}
+
+
+		for (let ind = 0; ind < users.length; ind++) {
+			var v = [];
+			var vf = [];
+			for (const user of users[ind]) {
+				var reason = isApllicableUser(user);
+				if (reason == 0) {
+					v.push({
+						id: user.id,
+						first_name: user.first_name,
+						last_name: user.last_name,
+						screen_name: user.screen_name
+					});
+				} else {
+					vf.push({
+						id: user.id,
+						first_name: user.first_name,
+						last_name: user.last_name,
+						screen_name: user.screen_name,
+						reason: reason
+					});
+				}
+			}
+			voters.push(v);
+			votersFiltered.push(vf);
+		}
+
+		console.log('VOTERS:');
+		console.log(voters);
+
+		console.log('FILTERED VOTERS:');
+		console.log(votersFiltered);
 
 		// добавить вывод на Result.js
-		// отфильтровать по опциям
 	}
 
 	const handlePoll = e => {
-		var pollAnswers = null;
 		if (pollUrl.match(/vk.com\/poll/)) {
 			getPollId(pollUrl)
 				.then( (pollAnswers) => mainHandlePoll(pollAnswers) );
@@ -119,6 +300,7 @@ const App = () => {
 					params: {
 						poll_id: poll_id,
 						answer_ids: answer_ids.join(','),
+						count: 1000,
 						access_token: access_token,
 						v: 5.131
 					}
@@ -262,20 +444,12 @@ const App = () => {
 	/* 1. Deleted */
 	const [deletedFilter, setDeletedFilter] = useState(false);
 
-	const onChangeDeletedFilter = e => {
-		console.log(e);
-		console.log(e.target);
-		// setDeletedFilter(e.target.checked);
-		setDeletedFilter(!deletedFilter);
-		console.log(deletedFilter);
-	};
-
 	/* 2. Sex */
-	const [sex, setSex] = useState('female');
+	const [sex, setSex] = useState(1);
 	const [sexFilter, setSexFilter] = useState(false);
 
 	const onChangeSex = e => {
-		setSex(e.target.value);
+		setSex(Number(e.target.value));
 	};
 
 	/* 3. Age */
@@ -330,31 +504,6 @@ const App = () => {
 				console.log('GOT ERR (GROUPS)');
 				console.log(error);
 			})
-			// sendRequest('groups.search', { q: group.value }, function (data) {
-			// 	/* `data' is expected to be 
-			// 		{
-			// 		response: {
-			// 			count: COUNT, 
-			// 			items: [ {
-			// 				id, is_admin, is_member, name, photo_100, type
-			// 			},.. ] 
-			// 		} 
-			// 	} */
-			// 	console.log('-------');
-			// 	console.log(data);
-			// 	const response = data.response;
-			// 	if (response.count == 0) {
-			// 		return;
-			// 	}
-			// 	console.log(response);
-
-			// 	const g = response.items[0];
-			// 	const groupChip = { value: group.value, label: g.name, src: g.photo_100, gid: g.id };	// `gid' is vk group id
-			// 	console.log(groupChip);
-			// 	console.log(groups);
-			// 	// groups.push(groupChip);
-			// 	setGroups([].concat(groups, groupChip));
-			// });
 		} else {
 			setGroups(e);
 		}
@@ -362,9 +511,7 @@ const App = () => {
 
 	// TODO: При вводе названия, предлагать сообщества в выпадающем списке
 	const onInputChangeGroup = e => {
-		// console.log('>>> ');
-		// console.log(groups);
-		// console.log(e)
+		;
 	};
 
 	/* 6. Cities */
@@ -425,14 +572,6 @@ const App = () => {
 		const updatedCities = selectedCities.filter((city) => city !== cityTitle);
 		setSelectedCities(updatedCities);
 	};
-
-	/* Submit form and get (un)counted users from selected poll
-	   Needs:
-	   1) poll
-	   2) filter options (deleted, sex, age, bot check, subscriptions, cities) */
-	function getPollUsers() {
-
-	}
 
 	return (
 		<ConfigProvider>

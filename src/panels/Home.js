@@ -151,6 +151,9 @@ const Home = ({ Home, go,
 				</Header>
 			</FormLayout>
 		</Group>
+		<Group>
+			<Button stretched data-to="result" onClick={go}>Jopa</Button>
+		</Group>
 	</Panel>
 );
 

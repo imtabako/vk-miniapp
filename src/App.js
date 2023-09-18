@@ -55,16 +55,29 @@ const App = () => {
 	// }
 
 	/* Polls */
-	// var voters = [];
-	// var votersFiltered = [];
+	const [pollResult, setPollResult] = useState(null);
+	const [pollAnswersResult, setPollAnswersResult] = useState([]);
+	const [uncountedList, setUncountedList] = useState([]);
+
+	var currentPoll = null;
 	var group2user = [];
 	
 	const [pollUrl, setPollUrl] = useState('');
-	// const [pollResult, setPollResult] = useState([]);
+
+	// reason for why vote was not counted
+	const reasonStr = {
+		'1': 'Удален или заблокирован',
+		'2': 'Не подходит пол',
+		'-2': 'Не указан пол',
+		'3': 'Не подходит возраст',
+		'-3': 'Не указан возраст',
+		'4': 'Бот или левая страница',
+		'5': 'Не состоит в группе',
+		'6': 'Не подходит город'
+	};
 
 	function isApllicableUser(user) {
 		if (deletedFilter) {
-			// TODO: should we check if banned?
 			if (Object.hasOwn(user, 'deactivated'))
 				return 1;
 		}
@@ -116,6 +129,7 @@ const App = () => {
 		var voters = [];
 		var votersFiltered = [];
 
+		console.log(currentPoll);
 		console.log(pollAnswers);
 
 		if (pollAnswers == null) {
@@ -242,6 +256,55 @@ const App = () => {
 		console.log('FILTERED VOTERS:');
 		console.log(votersFiltered);
 
+		// setVotersReact(voters.flat());
+		// setVotersFilteredReact(votersFiltered.flat());
+
+		var options = {
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric',
+			timezone: 'UTC',
+			hour: 'numeric',
+			minute: 'numeric',
+		};
+		
+		var date = new Date().toLocaleString("ru", options);
+
+		console.log('PollResult:');
+		console.log({
+			date: date,
+			question: currentPoll.question,
+			votes: currentPoll.votes,
+			answers: currentPoll.answers,
+			voters: voters,
+			votersFiltered: votersFiltered
+		});
+		setPollResult({
+			date: date,
+			question: currentPoll.question,
+			votes: currentPoll.votes,
+			uncountedVotes: votersFiltered.flat().length,
+			answers: currentPoll.answers,
+			voters: voters,
+			votersFiltered: votersFiltered
+		});
+
+		var answ = [];
+		for (let i = 0; i < currentPoll.answers.length; i++) {
+			answ.push({
+				answer: currentPoll.answers[i],
+				uncountedVotes: votersFiltered[i].length
+			});
+		};
+
+		console.log('PollAnswerResult:');
+		console.log(answ);
+		setPollAnswersResult(answ);
+
+		console.log('UncountedList:');
+		console.log(votersFiltered);
+		setUncountedList(votersFiltered);
+
 		// добавить вывод на Result.js
 	}
 
@@ -259,6 +322,7 @@ const App = () => {
 	}
 
 	// Получить poll.id по ссылке формата https://vk.com/poll-206499155_886442433
+	// TODO: polls.getVoters offset
 	function getPollId(url) {
 		// const regex = /poll(-\d+)_(\d+)/;
 		const match = url.match(/poll(-?\d+)_(\d+)/);
@@ -284,6 +348,7 @@ const App = () => {
 		.then((data) => {
 			if (data.response) {
 				const response = data.response;
+				currentPoll = data.response;
 				console.log('GOT POLL ID');
 				console.log(response);
 
@@ -321,6 +386,7 @@ const App = () => {
 	}
 
 	// Получить poll.id по ссылке формата https://vk.com/wall-206499155_1548866
+	// TODO: polls.getVoters offset
 	function getPollIdByWall(url) {
 		// const regex = /poll(-\d+)_(\d+)/;
 		const match = url.match(/wall(-?\d+_\d+)/);
@@ -393,7 +459,6 @@ const App = () => {
 	/* Options */
 	const onChangeOption = e => {
 		const option = e.target;
-		console.log(option);
 
 		switch (option.id) {
 			case 'deletedFilter':
@@ -595,8 +660,8 @@ const App = () => {
 									onCityInputChange={onCityInputChange}															//
 									citiesFilter={citiesFilter}																		//
 								/>
-								<Result id='result' go={go} />
-								<List id='list' go={go} />
+								<Result id='result' go={go} poll={pollResult} answers={pollAnswersResult}/>
+								<List id='list' go={go} poll={pollResult} list={uncountedList} reasons={reasonStr}/>
 							</View>
 						</SplitCol>
 					</SplitLayout>

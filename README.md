@@ -1,5 +1,13 @@
 # Screenshots
 
+![Screenshot_2023-09-27_11-52-09](https://github.com/imtabako/vk-miniapp/assets/30447724/23727cc5-0663-4b82-80f3-34eacd303e09)
+
+![Screenshot_2023-09-27_11-49-08](https://github.com/imtabako/vk-miniapp/assets/30447724/5bf99cc6-b967-4adc-8d99-cb583ab1a610)
+![Screenshot_2023-09-27_11-49-36](https://github.com/imtabako/vk-miniapp/assets/30447724/df9e3209-9ef9-4185-99b6-2072ea27fc19)
+![Screenshot_2023-09-27_11-50-19](https://github.com/imtabako/vk-miniapp/assets/30447724/d5d0b711-8b12-4273-9cef-12c18e573a22)
+
+
+
 # Текущее задание
 ## Poll input: 
 При onChange() проверять, может ли пользователь успешно вызвать polls.getVoters. Если нет, пометить Input красным и выдать сообщение об ошибке, [ОПЦИОНАЛЬНО ЕСЛИ ПРОВЕРКА НЕСКОЛЬКИХ ОПРОСОВ не добавлять опрос в список опросов].

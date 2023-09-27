@@ -13,7 +13,7 @@ const Home = ({ Home, go,
 	age, onChangeAge, ageFilter,			// 3. age
 											// 4. bots and shady
 	groups, groupsFilter, onChangeGroup,	// 5. groups
-	citiesFilter							// 6. cities
+	cities, citiesFilter, onChangeCities,	// 6. cities
 }) => (
 	<Panel id={Home}>
 		<PanelHeader>Проверка опросов</PanelHeader>
@@ -45,7 +45,11 @@ const Home = ({ Home, go,
 				</FormLayoutGroup>
 			</FormLayout>
 			{/* Debug button, delete it later */}
-			<Button size='l' stretched onClick={_chstates}>Check</Button>
+			{/* <FormLayout mode="vertical">
+				<FormItem>
+					<Button size='l' stretched onClick={_chstates}>DEBUG CHECK</Button>
+				</FormItem>
+			</FormLayout> */}
 		</Group>
 		<Group>
 			<Header>
@@ -116,9 +120,9 @@ const Home = ({ Home, go,
 						</Checkbox>
 						<FormItem>
 							<ChipsInput id='groups'
+								placeholder="Название или ссылка"
 								value={groups}
 								disabled={!groupsFilter}
-								placeholder="Название или ссылка"
 								onChange={onChangeGroup}
 								// onInputChange={() => console.log(groups)}	// suggest group in a dropdown box
 								renderChip={({ value, label, option: { src }, ...rest }) => (
@@ -142,9 +146,10 @@ const Home = ({ Home, go,
 						</Checkbox>
 						<FormItem>
 							<ChipsInput id='cities'
-								disabled={!citiesFilter}
 								placeholder="Санкт-Петербург"
-							// onChange={onCityInputChange}
+								disabled={!citiesFilter}
+								onChange={onChangeCities}
+								// onChange={onCityInputChange}
 							/>
 						</FormItem>
 					</FormLayoutGroup>

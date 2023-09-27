@@ -33,7 +33,7 @@ const App = () => {
 		return new Promise((resolve, reject) => {
 		  setTimeout(resolve, ms);
 		});
-	  }
+	}
 
 	// // Helper function
 	// function getUrl(method, params) {
@@ -502,6 +502,7 @@ const App = () => {
 			sex,
 			age,
 			groups,
+			cities
 		]);
 
 		console.log('-----');
@@ -580,6 +581,48 @@ const App = () => {
 	};
 
 	/* 6. Cities */
+	const [cities, setCities] = useState([]);
+	const [citiesFilter, setCitiesFilter] = useState(false);
+
+	const onChangeCities = e => {
+		// {value, label, id}
+		console.log(e);
+		console.log(e.target.value);
+	}
+
+	return (
+		<ConfigProvider>
+			<AdaptivityProvider>
+				<AppRoot>
+					<SplitLayout popout={popout}>
+						<SplitCol>
+							<View activePanel={activePanel}>
+								<Home
+									id='home' fetchedUser={fetchedUser} go={go}
+									setPollUrl={setPollUrl} handlePoll={handlePoll}													// poll
+									onChangeOption={onChangeOption}																	// handle all options changes
+									_chstates={_chstates}																			// debug button
+																																	// 1. deleted
+									sexFilter={sexFilter} onChangeSex={onChangeSex}													// 2. sex
+									age={age} ageFilter={ageFilter} onChangeAge={onChangeAge}										// 3. age
+																																	// 4. bots and shady
+									groups={groups} groupsFilter={groupsFilter} onChangeGroup={onChangeGroup}						// 5. groups
+									cities={cities} citiesFilter={citiesFilter} onChangeCities={onChangeCities}													// 6. city
+								/>
+								<Result id='result' go={go} poll={pollResult} answers={pollAnswersResult}/>
+								<List id='list' go={go} poll={pollResult} list={uncountedList} reasons={reasonStr}/>
+							</View>
+						</SplitCol>
+					</SplitLayout>
+				</AppRoot>
+			</AdaptivityProvider>
+		</ConfigProvider>
+	);
+
+	function _todelete() {
+	// УДАЛИТЬ
+	// ---------------------------------------------------------------------------------------------------------
+	/* 6. Cities */
 	// State для хранения результатов поиска городов
 	const [citySearchResults, setCitySearchResults] = useState([]);
 	const [citiesFilter, setCitiesFilter] = useState(false);
@@ -637,38 +680,12 @@ const App = () => {
 		const updatedCities = selectedCities.filter((city) => city !== cityTitle);
 		setSelectedCities(updatedCities);
 	};
-
-	return (
-		<ConfigProvider>
-			<AdaptivityProvider>
-				<AppRoot>
-					<SplitLayout popout={popout}>
-						<SplitCol>
-							<View activePanel={activePanel}>
-								<Home
-									id='home' fetchedUser={fetchedUser} go={go}
-									setPollUrl={setPollUrl} handlePoll={handlePoll}													// poll
-									onChangeOption={onChangeOption}																	// handle all options changes
-									_chstates={_chstates}																			// debug button
-																																	// 1. deleted
-									sexFilter={sexFilter} onChangeSex={onChangeSex}													// 2. sex
-									age={age} ageFilter={ageFilter} onChangeAge={onChangeAge}										// 3. age
-																																	// 4. bots and shady
-									groups={groups} groupsFilter={groupsFilter} onChangeGroup={onChangeGroup}						// 5. groups
-									citySearchResults={citySearchResults} removeCity={removeCity} searchCities={searchCities}		// 6. city
-									selectedCities={selectedCities} citySearchQuery={citySearchQuery} onCitySelect={onCitySelect}	//
-									onCityInputChange={onCityInputChange}															//
-									citiesFilter={citiesFilter}																		//
-								/>
-								<Result id='result' go={go} poll={pollResult} answers={pollAnswersResult}/>
-								<List id='list' go={go} poll={pollResult} list={uncountedList} reasons={reasonStr}/>
-							</View>
-						</SplitCol>
-					</SplitLayout>
-				</AppRoot>
-			</AdaptivityProvider>
-		</ConfigProvider>
-	);
+	// ---------------------------------------------------------------------------------------------------------
+	}
+	// citySearchResults={citySearchResults} removeCity={removeCity} searchCities={searchCities}		// 6. city
+	// selectedCities={selectedCities} citySearchQuery={citySearchQuery} onCitySelect={onCitySelect}	//
+	// onCityInputChange={onCityInputChange}															//
+	// citiesFilter={citiesFilter}																		//
 }
 
 export default App;
